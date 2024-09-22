@@ -4,14 +4,17 @@ import {DataFrame, fromCSV, IDataFrame} from "data-forge";
 import {DataRow} from "./data-row";
 import {WebService} from "./web.service";
 import {ViolinPlotComponent} from "./violin-plot/violin-plot.component";
-import {MatFormField, MatLabel} from "@angular/material/form-field";
+import {MatFormField, MatLabel, MatSuffix} from "@angular/material/form-field";
 import {MatOption, MatSelect} from "@angular/material/select";
 import {FormsModule} from "@angular/forms";
+import {MatIcon} from "@angular/material/icon";
+import {MatButton, MatIconButton} from "@angular/material/button";
+import {MatInput} from "@angular/material/input";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ViolinPlotComponent, MatFormField, MatSelect, MatOption, MatLabel, FormsModule],
+  imports: [RouterOutlet, ViolinPlotComponent, MatFormField, MatSelect, MatOption, MatLabel, FormsModule, MatIcon, MatSuffix, MatIconButton, MatInput, MatButton],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -26,6 +29,7 @@ export class AppComponent {
   groupVar: string = 'condition'
   displayDataRows: DataRow[] = []
   proteinSelected: string = "all"
+  confidence: number = 0.75
 
   constructor(private web: WebService) {
     this.web.getFileLocation('normalized_filtered_rab.txt').subscribe(
@@ -43,5 +47,29 @@ export class AppComponent {
         )
       }
     )
+  }
+
+  changeDisplay(event: any) {
+    if (this.proteinSelected !== "all") {
+      this.displayDataRows = this.df.where(row => row["Entry Name"] === this.proteinSelected && row["PTM_localization"] >= this.confidence).toArray()
+    } else {
+      this.displayDataRows = this.df.where(row => row["PTM_localization"] >= this.confidence).toArray()
+    }
+  }
+
+  downloadDisplayToCSV() {
+    if (this.displayDataRows.length === 0) {
+      return
+    }
+    const header = Object.keys(this.displayDataRows[0]).join(",")+ "\n"
+    const csv = this.displayDataRows.map(row => Object.values(row).join(",")).join("\n")
+    const blob = new Blob([header+csv], {type: 'text/csv'})
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'display.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
+
   }
 }

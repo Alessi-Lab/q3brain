@@ -19,6 +19,19 @@
         Protein Selection
       </mat-label>
     </mat-form-field>
+    <mat-form-field>
+      <input matInput type="number" [(ngModel)]="confidence">
+      <mat-label>Confidence Cutoff</mat-label>
+    </mat-form-field>
+    <div style="display: flex; gap: 20px">
+      <button mat-raised-button (click)="changeDisplay({})">
+        Filter
+      </button>
+      <button mat-icon-button (click)="downloadDisplayToCSV()" aria-label="Download Displaying Data">
+        <mat-icon matSuffix>download</mat-icon>
+      </button>
+    </div>
+
   </div>
 
 
